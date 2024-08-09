@@ -1,3 +1,13 @@
+#!/bin/bash
+
+cd "$(git rev-parse --show-toplevel)/config"
+
+[ -z ${S3_ENDPOINT_IP} ] && echo "missing end-variable S3_ENDPOINT_IP" && exit
+[ -z ${S3_ENDPOINT_PORT} ] && echo "missing end-variable S3_ENDPOINT_PORT" && exit
+[ -z ${S3_ACCESS_KEY} ] && echo missing end-variable S3_ACCESS_KEY && exit
+[ -z ${S3_SECRET_KEY} ] && echo missing end-variable S3_SECRET_KEY && exit
+
+cat << EOF > milvus.yaml
 # Licensed to the LF AI & Data foundation under one
 # or more contributor license agreements. See the NOTICE file
 # distributed with this work for additional information
@@ -74,13 +84,13 @@ localStorage:
 # We refer to the storage service as MinIO/S3 in the following description for simplicity.
 minio:
   #address: 192.168.208.1 # Address of MinIO/S3
-  address: 172.17.0.1 # Address of CEPH/S3 localhost (NOTE: the milvus runs in a container it needs to access the host)
+  address: ${S3_ENDPOINT_IP} # Address of CEPH/S3 localhost (NOTE: the milvus runs in a container it needs to access the host)
   #port: 9000 # Port of MinIO/S3
-  port: 8000 # Port of CEPH/S3
+  port: ${S3_ENDPOINT_PORT} # Port of CEPH/S3
   #accessKeyID: 1p9PF799pr6YZI1E04nx # accessKeyID of MinIO/S3
   #secretAccessKey: NRwWgG24xx4ZHfS0eDPmr3R1ARdfnryJ05wXYGr9 # MinIO/S3 encryption string
-  accessKeyID: b2345678901234567890 # accessKeyID of CEPH/S3
-  secretAccessKey: b234567890123456789012345678901234567890 # CEPH/S3 encryption string
+  accessKeyID: ${S3_ACCESS_KEY:-b2345678901234567890} # accessKeyID of CEPH/S3
+  secretAccessKey: ${S3_SECRET_KEY:-b234567890123456789012345678901234567890} # CEPH/S3 encryption string
   useSSL: false # Access to MinIO/S3 with SSL
   ssl:
     tlsCACert: /path/to/public.crt # path to your CACert file
@@ -230,15 +240,15 @@ proxy:
     remoteMaxTime: 0 # Max time for log file in minIO, in hours
     formatters:
       base:
-        format: "[$time_now] [ACCESS] <$user_name: $user_addr> $method_name [status: $method_status] [code: $error_code] [sdk: $sdk_version] [msg: $error_msg] [traceID: $trace_id] [timeCost: $time_cost]"
+        format: "[\$time_now] [ACCESS] <\$user_name: \$user_addr> \$method_name [status: \$method_status] [code: \$error_code] [sdk: \$sdk_version] [msg: \$error_msg] [traceID: \$trace_id] [timeCost: \$time_cost]"
       query:
-        format: "[$time_now] [ACCESS] <$user_name: $user_addr> $method_name [status: $method_status] [code: $error_code] [sdk: $sdk_version] [msg: $error_msg] [traceID: $trace_id] [timeCost: $time_cost] [database: $database_name] [collection: $collection_name] [partitions: $partition_name] [expr: $method_expr]"
+        format: "[\$time_now] [ACCESS] <\$user_name: \$user_addr> \$method_name [status: \$method_status] [code: \$error_code] [sdk: \$sdk_version] [msg: \$error_msg] [traceID: \$trace_id] [timeCost: \$time_cost] [database: \$database_name] [collection: \$collection_name] [partitions: \$partition_name] [expr: \$method_expr]"
         methods: "Query,Search,Delete"
   connectionCheckIntervalSeconds: 120 # the interval time(in seconds) for connection manager to scan inactive client info
   connectionClientInfoTTLSeconds: 86400 # inactive client info TTL duration, in seconds
   maxConnectionNum: 10000 # the max client info numbers that proxy should manage, avoid too many client infos
   gracefulStopTimeout: 30 # seconds. force stop node without graceful stop
-  slowQuerySpanInSeconds: 5 # query whose executed time exceeds the `slowQuerySpanInSeconds` can be considered slow, in seconds.
+  slowQuerySpanInSeconds: 5 # query whose executed time exceeds the \`slowQuerySpanInSeconds\` can be considered slow, in seconds.
   http:
     enabled: true # Whether to enable the http server
     debug_mode: false # Whether to enable http server debug mode
@@ -327,7 +337,7 @@ queryNode:
   cache:
     enabled: true
     memoryLimit: 2147483648 # 2 GB, 2 * 1024 *1024 *1024
-    readAheadPolicy: willneed # The read ahead policy of chunk cache, options: `normal, random, sequential, willneed, dontneed`
+    readAheadPolicy: willneed # The read ahead policy of chunk cache, options: \`normal, random, sequential, willneed, dontneed\`
     # options: async, sync, off. 
     # Specifies the necessity for warming up the chunk cache. 
     # 1. If set to "sync" or "async," the original vector data will be synchronously/asynchronously loaded into the 
@@ -632,7 +642,7 @@ common:
 #   4. DQL result rate protection;
 # If necessary, you can also manually force to deny RW requests.
 quotaAndLimits:
-  enabled: true # `true` to enable quota and limits, `false` to disable.
+  enabled: true # \`true\` to enable quota and limits, \`false\` to disable.
   # quotaCenterCollectInterval is the time interval that quotaCenter
   # collects metrics from Proxies, Query cluster and Data cluster.
   # seconds, (0 ~ 65536)
@@ -750,7 +760,7 @@ quotaAndLimits:
       lowWaterLevel: 0.2
       highWaterLevel: 0.4
     diskProtection:
-      enabled: true # When the total file size of object storage is greater than `diskQuota`, all dml requests would be rejected;
+      enabled: true # When the total file size of object storage is greater than \`diskQuota\`, all dml requests would be rejected;
       diskQuota: -1 # MB, (0, +inf), default no limit
       diskQuotaPerDB: -1 # MB, (0, +inf), default no limit
       diskQuotaPerCollection: -1 # MB, (0, +inf), default no limit
@@ -808,3 +818,5 @@ trace:
 gpu:
   initMemSize:  # Gpu Memory Pool init size
   maxMemSize:  # Gpu Memory Pool Max size
+EOF
+
