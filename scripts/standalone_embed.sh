@@ -38,6 +38,7 @@ EOF
         -e ETCD_CONFIG_PATH=/milvus/configs/embedEtcd.yaml \
         -e COMMON_STORAGETYPE=remote \
         -v $(pwd)/volumes/milvus:/var/lib/milvus \
+        -v $(pwd)/examples/:/milvus/examples/ \
         -v $(pwd)/embedEtcd.yaml:/milvus/configs/embedEtcd.yaml \
         -v $(pwd)/config/milvus.yaml:/milvus/configs/milvus.yaml \
         -p 19530:19530 \
