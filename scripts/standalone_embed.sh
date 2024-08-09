@@ -17,6 +17,8 @@
 # limitations under the License.
 
 run_embed() {
+cd "$(git rev-parse --show-toplevel)/"
+
     cat << EOF > embedEtcd.yaml
 listen-client-urls: http://0.0.0.0:2379
 advertise-client-urls: http://0.0.0.0:2379
@@ -37,7 +39,7 @@ EOF
         -e COMMON_STORAGETYPE=remote \
         -v $(pwd)/volumes/milvus:/var/lib/milvus \
         -v $(pwd)/embedEtcd.yaml:/milvus/configs/embedEtcd.yaml \
-        -v $(pwd)/milvus.yaml:/milvus/configs/milvus.yaml \
+        -v $(pwd)/config/milvus.yaml:/milvus/configs/milvus.yaml \
         -p 19530:19530 \
         -p 9091:9091 \
         -p 2379:2379 \
