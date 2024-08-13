@@ -108,6 +108,7 @@ res = client.search(
     #data=[{"id": 12345, "vector": [0.3580376395471989, -0.6023495712049978, 0.18414012509913835, -0.26286205330961354, 0.9029438446296592], "color": "red", "color_tag": "123"} ],
     data=[query_vector],
     limit=5, # Max. number of search results to return
+    consistency_level="Strong",
     search_params={"metric_type": "IP", "params": {}} # Search parameters
 )
 
@@ -125,6 +126,7 @@ res = client.search(
         [0.3172005263489739, 0.9719044792798428, -0.36981146090600725, -0.4860894583077995, 0.95791889146345]
     ], # Replace with your query vectors
     limit=2, # Max. number of search results to return
+    consistency_level="Strong",
     search_params={"metric_type": "IP", "params": {}} # Search parameters
 )
 
@@ -141,6 +143,7 @@ res = client.search(
     data=[query_vector],
     limit=5,
     search_params={"metric_type": "IP", "params": {"level": 1}},
+    consistency_level="Strong",
     partition_names=["red"]
 )
 
@@ -154,6 +157,7 @@ res = client.search(
     data=[query_vector], 
     limit=5, # Max. number of search results to return
     search_params={"metric_type": "IP", "params": {}}, # Search parameters
+    consistency_level="Strong",
     output_fields=["color"] # Output fields to return
 )
 
@@ -168,6 +172,7 @@ res = client.search(
     limit=5, # Max. number of search results to return
     search_params={"metric_type": "IP", "params": {}}, # Search parameters
     output_fields=["color"], # Output fields to return
+    consistency_level="Strong",
     filter='color like "red%"'
 )
 
@@ -189,6 +194,7 @@ res = client.search(
     data=[query_vector],
     limit=3, # Max. number of search results to return
     search_params=search_params, # Search parameters
+    consistency_level="Strong",
     output_fields=["color"], # Output fields to return
 )
 
